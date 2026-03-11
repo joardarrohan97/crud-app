@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EMS Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="dev-banner">
+  Developed by Rohan Joardar
+</div>
+
+<div class="sidebar">
+  <h2>EMS</h2>
+  <a href="/home">Home</a>
+  <a href="/addEmployee">Add Employee</a>
+  <a href="/home">Dashboard</a>
+</div>
+
+<button onclick="toggleTheme()" class="theme-btn">Theme</button>
+<button onclick="logout()" class="logout">Logout</button>
+
+<div class="content">
+
+<div class="card">
+  <input id="search" placeholder="Search by name or department" onkeyup="filter()">
+</div>
+
+<div class="card" id="stats"></div>
+
+<div class="card">
+<table id="table">
+<tr>
+<th>ID</th><th>Name</th><th>Email</th>
+<th>Department</th><th>Role</th>
+<th>Salary</th><th>Edit</th><th>Delete</th>
+</tr>
+</table>
+
+<div style="margin-top:10px">
+<button onclick="prev()">Prev</button>
+<button onclick="next()">Next</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Salary Analytics</h3>
+<canvas id="salaryChart"></canvas>
+</div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div id="modal" class="modal">
+ <div class="modal-box">
+  <input id="mname" placeholder="Name">
+  <input id="memail" placeholder="Email">
+  <input id="mdept" placeholder="Department">
+  <input id="mrole" placeholder="Role">
+  <input id="msalary" placeholder="Salary">
+  <button onclick="saveEdit()">Save</button>
+ </div>
+</div>
+
+<style>
+.modal{
+ display:none;
+ position:fixed;
+ top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,.7);
+ justify-content:center;
+ align-items:center;
+}
+.modal-box{
+ background:#1e293b;
+ padding:20px;
+ border-radius:12px;
+ width:250px;
+}
+.modal-box input{width:100%;margin:6px 0;padding:6px}
+.logout{position:fixed;top:15px;right:20px}
+.theme-btn{position:fixed;top:15px;right:90px}
+</style>
+
+<script>
+let employees=[], allEmployees=[];
+let page=0, size=5, editId=null;
+let chart=null;
+
+// Backend session guard
+fetch('/home').catch(()=>location.href="/login");
+
+function formatMoney(n){
+ return n.toLocaleString("en-IN");
+}
+
+function load(){
+ fetch('/api/employees')
+ .then(r=>r.json())
+ .then(d=>{
+   allEmployees=d;
+   employees=d;
+   render();
+   drawChart();
+   loadStats();
+ });
+}
+
+function render(){
+ const t=document.getElementById("table");
+ t.innerHTML=t.rows[0].outerHTML;
+
+ employees.slice(page*size,page*size+size)
+ .forEach(e=>{
+  t.innerHTML+=`
+  <tr>
+   <td>${e.id}</td>
+   <td>${e.name}</td>
+   <td>${e.email}</td>
+   <td>${e.department}</td>
+   <td>${e.role}</td>
+   <td>₹ ${formatMoney(e.salary)}</td>
+   <td><button onclick='edit(${JSON.stringify(e)})'>Edit</button></td>
+   <td><button onclick='del(${e.id})'>X</button></td>
+  </tr>`;
+ });
+}
+
+function next(){ if((page+1)*size<employees.length){page++;render();}}
+function prev(){ if(page>0){page--;render();}}
+
+function del(id){
+ fetch(`/api/employees/${id}`,{method:'DELETE'}).then(load);
+}
+
+function filter(){
+ const v=search.value.toLowerCase();
+ employees=allEmployees.filter(e =>
+   e.name.toLowerCase().includes(v) ||
+   e.department.toLowerCase().includes(v)
+ );
+ page=0;
+ render();
+}
+
+function edit(e){
+ editId=e.id;
+ modal.style.display="flex";
+ mname.value=e.name;
+ memail.value=e.email;
+ mdept.value=e.department;
+ mrole.value=e.role;
+ msalary.value=e.salary;
+}
+
+function saveEdit(){
+ fetch(`/api/employees/${editId}`,{
+  method:'PUT',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({
+   name:mname.value,
+   email:memail.value,
+   department:mdept.value,
+   role:mrole.value,
+   salary:Number(msalary.value),
+   active:true
+  })
+ }).then(()=>{ modal.style.display="none"; load();});
+}
+
+function drawChart(){
+ const ctx=document.getElementById("salaryChart");
+ if(chart) chart.destroy();
+
+ chart=new Chart(ctx,{
+  type:"bar",
+  data:{
+   labels:allEmployees.map(e=>e.name),
+   datasets:[{
+    data:allEmployees.map(e=>e.salary),
+    backgroundColor:"#38bdf8"
+   }]
+  },
+  options:{
+   responsive:true,
+   plugins:{legend:{display:false}},
+   scales:{y:{beginAtZero:true}}
+  }
+ });
+}
+
+function toggleTheme(){
+ document.documentElement.classList.toggle("light");
+ localStorage.setItem("theme",
+ document.documentElement.classList.contains("light")?"light":"dark");
+}
+
+if(localStorage.getItem("theme")==="light"){
+ document.documentElement.classList.add("light");
+}
+
+function logout(){
+ fetch('/auth/logout',{method:'POST'}).finally(()=>{
+   location.href="/login";
+ });
+}
+
+function loadStats(){
+ fetch('/api/employees/stats')
+ .then(r=>r.json())
+ .then(s=>{
+  stats.innerHTML=`
+   <h3>Total Employees: ${s.total}</h3>
+   <h3>Average Salary: ₹ ${formatMoney(Math.round(s.avgSalary))}</h3>
+   <h3>Total Payroll: ₹ ${formatMoney(s.payroll)}</h3>
+  `;
+ });
+}
+
+load();
+</script>
+
+</body>
+</html>

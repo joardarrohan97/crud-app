@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<div class="card" style="width:340px;text-align:center">
+
+<h2>Employee Management System</h2>
+<p style="color:#94a3b8;margin-bottom:20px">Secure Login</p>
+
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+
+<button onclick="login()" style="width:100%;margin-top:10px">Login</button>
+
+</div>
+
+
+<script>
+function login(){
+
+ fetch('/auth/login',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body: JSON.stringify({
+     username: user.value,
+     password: pass.value
+   })
+ })
+ .then(response => {
+    if(!response.ok) throw new Error("Login failed");
+    return response.json();
+ })
+ .then(data => {
+    console.log("Logged in:", data);
+
+    sessionStorage.setItem("user", data.username);
+    sessionStorage.setItem("role", data.role);
+
+    // ✅ redirect via controller
+    window.location.href = "/home";
+ })
+ .catch(err => {
+    alert("Login failed");
+    console.error(err);
+ });
+}
+</script>
+
+
+
+
+</body>
+</html>

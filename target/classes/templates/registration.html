@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Employee</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+
+<div class="card">
+  <h2>Add Employee</h2>
+
+  <input id="empName" placeholder="Name">
+  <input id="email" placeholder="Email">
+  <input id="department" placeholder="Department">
+  <input id="role" placeholder="Role">
+  <input id="salary" type="number" placeholder="Salary">
+
+  <button onclick="saveEmployee()">Save</button>
+  <button onclick="goBack()" class="back-btn">Back</button>
+  <p id="msg"></p>
+</div>
+
+<script>
+function saveEmployee(){
+  fetch('/api/employees',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      name: document.getElementById('empName').value,
+      email: document.getElementById('email').value,
+      department: document.getElementById('department').value,
+      role: document.getElementById('role').value,
+      salary: Number(document.getElementById('salary').value)
+    })
+  }).then(()=>msg.innerText="Employee Added Successfully!");
+}
+function goBack(){
+    window.location.href = "/home";
+}
+
+</script>
+</body>
+</html>

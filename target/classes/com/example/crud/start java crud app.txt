@@ -1,0 +1,39 @@
+start java crud app 
+bin\mvn.cmd spring-boot:run
+
+stop 
+ctrl + c
+
+Postgres db
+C:\Program Files\PostgreSQL\17\bin>psql --version
+psql (PostgreSQL) 17.6
+
+C:\Program Files\PostgreSQL\17\bin>psql -U postgres
+Password for user postgres:
+
+Get all users
+curl http://localhost:8080/api/users
+
+Create New User
+curl -X POST http://localhost:8080/api/users ^
+-H "Content-Type: application/json" ^
+-d "{\"name\":\"Alice\",\"email\":\"alice@gmail.com\",\"age\":24}"
+
+
+Update user
+curl -X PUT http://localhost:8080/api/users/1 ^
+-H "Content-Type: application/json" ^
+-d "{\"name\":\"Updated Alice\",\"email\":\"alice_new@gmail.com\",\"age\":25}"
+
+
+Delete user
+curl -X DELETE http://localhost:8080/api/users/1
+
+
+Quick Check
+curl http://localhost:8080/api/users
+
+http://localhost:8080/login.html
+http://localhost:8080/registration.html
+http://localhost:8080/dashboard.html
+

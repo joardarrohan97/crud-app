@@ -1,0 +1,10 @@
+com\example\crud\model\AppUser.class
+com\example\crud\service\EmployeeService.class
+com\example\crud\repository\UserRepository.class
+com\example\crud\controller\AuthController.class
+com\example\crud\repository\EmployeeRepository.class
+com\example\crud\controller\EmployeeController.class
+com\example\crud\config\SecurityConfig.class
+com\example\crud\CrudApplication.class
+com\example\crud\controller\PageController.class
+com\example\crud\model\Employee.class
