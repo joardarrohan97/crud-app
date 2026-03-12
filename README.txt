@@ -32,3 +32,6 @@ POST /employees
 GET /employees
 PUT /employees/{id}
 DELETE /employees/{id}
+## Project Architecture
+
+![Architecture](Architecture.png)
